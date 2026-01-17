@@ -110,7 +110,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 1. ส่วนตั้งค่า FIREBASE (ใส่ค่าเดิมของคุณให้แล้ว) ---
+        // --- 1. ส่วนตั้งค่า FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAIdyu8C3PASsDZnPJuFqQpTHPXgIzQxDc",
             authDomain: "roblox-farm-db.firebaseapp.com",
@@ -235,7 +235,7 @@
         };
 
         // --- Component: Login (เชื่อม Firebase Auth + Toast) ---
-        const Login = ({ onLogin, config, notify }) => {
+        const Login = ({ config, notify }) => {
             const [isRegister, setIsRegister] = useState(false);
             const [username, setUsername] = useState("");
             const [password, setPassword] = useState("");
@@ -993,7 +993,7 @@
 
             if (!isLoggedIn) return (
                 <>
-                    <Login onLogin={handleLogin} config={config} notify={notify} />
+                    <Login config={config} notify={notify} />
                     <ToastSystem notifications={notifications} removeNotification={removeNotification} />
                 </>
             );
