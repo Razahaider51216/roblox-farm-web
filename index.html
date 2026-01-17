@@ -77,6 +77,14 @@
             animation: pulse-glow 2s infinite;
         }
 
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in-right {
+            animation: slideInRight 0.3s ease-out forwards;
+        }
+
         @keyframes marquee {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
@@ -101,7 +109,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 1. ส่วนตั้งค่า FIREBASE (ใส่ค่าจากรูปภาพให้แล้วครับ) ---
+        // --- 1. ส่วนตั้งค่า FIREBASE (ใส่ค่าของคุณที่นี่) ---
         const firebaseConfig = {
             apiKey: "AIzaSyAIdyu8C3PASsDZnPJuFqQpTHPXgIzQxDc",
             authDomain: "roblox-farm-db.firebaseapp.com",
@@ -151,10 +159,13 @@
             CreditCard: (props) => <Icon {...props}><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></Icon>,
             Bell: (props) => <Icon {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></Icon>,
             Home: (props) => <Icon {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>,
-            Palette: (props) => <Icon {...props}><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></Icon>
+            Palette: (props) => <Icon {...props}><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></Icon>,
+            CheckCircle: (props) => <Icon {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Icon>,
+            XCircle: (props) => <Icon {...props}><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></Icon>,
+            AlertTriangle: (props) => <Icon {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></Icon>
         };
 
-        const { User, Lock, Mail, Gamepad2, Zap, ShieldCheck, LogOut, Menu, X, ShoppingCart, Clock, Phone, FileText, Key, Settings, Trash2, Edit, Plus, Upload, Megaphone, Wallet, CreditCard, Bell, Home, Palette } = LucideIcons;
+        const { User, Lock, Mail, Gamepad2, Zap, ShieldCheck, LogOut, Menu, X, ShoppingCart, Clock, Phone, FileText, Key, Settings, Trash2, Edit, Plus, Upload, Megaphone, Wallet, CreditCard, Bell, Home, Palette, CheckCircle, XCircle, AlertTriangle } = LucideIcons;
 
         // --- Initial Config (Fallback) ---
         const initialConfig = {
@@ -167,52 +178,97 @@
             heroImage: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071"
         };
 
-        const initialReviews = [
-            { id: 1, user: "Karn Gamer", comment: "งานไวมากครับ สั่งปุ๊บเริ่มปั๊บ 1 วันเสร็จเลย", rating: 5 },
-            { id: 2, user: "Somchai_Z", comment: "บริการดี แอดมินตอบไว ปลอดภัยจริงครับ", rating: 5 },
-            { id: 3, user: "NongB", comment: "ราคาถูกกว่าร้านอื่น คุ้มค่ามาก", rating: 4 }
-        ];
+        // --- Component: Modern Toast Notification ---
+        const ToastSystem = ({ notifications, removeNotification }) => {
+            return (
+                <div className="fixed top-4 right-4 z-[200] flex flex-col gap-3 pointer-events-none">
+                    {notifications.map(n => (
+                        <div key={n.id} 
+                            className={`pointer-events-auto min-w-[300px] p-4 rounded-xl shadow-2xl border flex items-center gap-3 animate-slide-in-right backdrop-blur-md ${
+                                n.type === 'success' 
+                                ? 'bg-green-900/90 border-green-500 text-green-100 shadow-green-500/20' 
+                                : n.type === 'error'
+                                ? 'bg-red-900/90 border-red-500 text-red-100 shadow-red-500/20'
+                                : 'bg-slate-800/90 border-slate-500 text-white'
+                            }`}
+                        >
+                            <div className={`p-2 rounded-full ${
+                                n.type === 'success' ? 'bg-green-500/20' : n.type === 'error' ? 'bg-red-500/20' : 'bg-slate-500/20'
+                            }`}>
+                                {n.type === 'success' ? <CheckCircle size={24} className="text-green-400"/> : 
+                                 n.type === 'error' ? <XCircle size={24} className="text-red-400"/> : 
+                                 <AlertTriangle size={24} className="text-yellow-400"/>}
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-sm">{n.type === 'success' ? 'สำเร็จ!' : n.type === 'error' ? 'เกิดข้อผิดพลาด' : 'แจ้งเตือน'}</h4>
+                                <p className="text-xs opacity-90">{n.message}</p>
+                            </div>
+                            <button onClick={() => removeNotification(n.id)} className="ml-auto hover:text-white/80"><X size={16}/></button>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
 
-        // --- Component: Login (เชื่อม Firebase Auth) ---
-        const Login = ({ onLogin, config }) => {
+        // --- Component: Custom Confirm Modal ---
+        const ConfirmModal = ({ isOpen, message, onConfirm, onCancel }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel}></div>
+                    <div className="relative bg-slate-900 border border-slate-600 rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-float">
+                        <div className="flex flex-col items-center text-center mb-6">
+                            <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mb-4">
+                                <AlertTriangle size={32} className="text-yellow-500"/>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">ยืนยันการทำรายการ?</h3>
+                            <p className="text-slate-400">{message}</p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold transition-colors">ยกเลิก</button>
+                            <button onClick={onConfirm} className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold shadow-lg shadow-red-600/20 transition-all">ยืนยัน</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Component: Login (เชื่อม Firebase Auth + Toast) ---
+        const Login = ({ onLogin, config, notify }) => {
             const [isRegister, setIsRegister] = useState(false);
             const [username, setUsername] = useState("");
             const [password, setPassword] = useState("");
             const [email, setEmail] = useState("");
             const [confirmPassword, setConfirmPassword] = useState("");
-            const [error, setError] = useState("");
 
             const handleSubmit = (e) => {
                 e.preventDefault();
-                setError("");
 
                 if (isRegister) {
                     if (!email || !password || !confirmPassword || !username) {
-                        setError("กรุณากรอกข้อมูลให้ครบถ้วน"); return;
+                        notify("error", "กรุณากรอกข้อมูลให้ครบถ้วน"); return;
                     }
                     if (password !== confirmPassword) {
-                        setError("รหัสผ่านไม่ตรงกัน"); return;
+                        notify("error", "รหัสผ่านไม่ตรงกัน"); return;
                     }
-                    // Register with Firebase
                     auth.createUserWithEmailAndPassword(email, password)
                         .then((userCredential) => {
-                            // Save displayName (Username)
                             userCredential.user.updateProfile({ displayName: username }).then(() => {
-                                // Reload to update state
+                                notify("success", "สมัครสมาชิกสำเร็จ!");
                             });
                         })
                         .catch((error) => {
-                            setError(error.message);
+                            notify("error", error.message);
                         });
 
                 } else {
                     if (!email || !password) {
-                        setError("กรุณากรอกอีเมลและรหัสผ่าน"); return;
+                        notify("error", "กรุณากรอกอีเมลและรหัสผ่าน"); return;
                     }
-                    // Login with Firebase
                     auth.signInWithEmailAndPassword(email, password)
+                        .then(() => notify("success", "ยินดีต้อนรับกลับครับ!"))
                         .catch((error) => {
-                            setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+                            notify("error", "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
                         });
                 }
             };
@@ -235,13 +291,11 @@
                         <p className="text-center text-slate-400 mb-8">{isRegister ? "สร้างบัญชีใหม่เพื่อเริ่มใช้บริการ" : "เข้าสู่ระบบด้วย Email"}</p>
                         
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Email Field (Always visible for Firebase) */}
                             <div className="relative">
                                 <div className="absolute left-3 top-3.5 text-slate-500"><Mail size={20} /></div>
                                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="อีเมล (Email)" required />
                             </div>
 
-                            {/* Username Field (Only for Register to set display name) */}
                             {isRegister && (
                                 <div className="relative">
                                     <div className="absolute left-3 top-3.5 text-slate-500"><User size={20} /></div>
@@ -261,7 +315,6 @@
                                 </div>
                             )}
                             
-                            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
                             <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-3 rounded-lg shadow-lg transform hover:scale-105 transition-all">
                                 {isRegister ? "สมัครสมาชิก" : "เข้าสู่ระบบ"}
                             </button>
@@ -277,7 +330,7 @@
         };
 
         // --- Component: Order Form Modal ---
-        const OrderForm = ({ service, onSubmit, onCancel }) => {
+        const OrderForm = ({ service, onSubmit, onCancel, notify }) => {
             const [robloxUser, setRobloxUser] = useState("");
             const [robloxPass, setRobloxPass] = useState("");
             const [twoFactor, setTwoFactor] = useState("");
@@ -288,19 +341,17 @@
             const handleSubmit = (e) => {
                 e.preventDefault();
                 setLoading(true);
-                // ส่งข้อมูลกลับไปหน้า App เพื่อบันทึกเข้า Firebase
                 onSubmit({
                     serviceName: service.title,
                     price: service.price,
                     date: new Date().toLocaleDateString(),
                     robloxUser,
-                    robloxPass, // ระวัง: การส่งรหัสผ่านแบบนี้ยังไม่เข้ารหัส (เพื่อการศึกษาเท่านั้น)
+                    robloxPass,
                     twoFactor,
                     contact,
                     details,
                     status: "pending"
                 });
-                // ไม่ต้อง setLoading(false) เพราะเดี๋ยว Modal จะปิดเอง
             };
 
             return (
@@ -400,18 +451,18 @@
         };
 
         // --- Component: Top-up Page ---
-        const TopUpPage = ({ onTopUp }) => {
+        const TopUpPage = ({ onTopUp, notify }) => {
             const [amount, setAmount] = useState("");
             const [method, setMethod] = useState("bank"); // bank, wallet
 
             const handleTopUp = (e) => {
                 e.preventDefault();
-                if (!amount || isNaN(amount) || amount <= 0) return alert("กรุณาระบุจำนวนเงินที่ถูกต้อง");
+                if (!amount || isNaN(amount) || amount <= 0) return notify("error", "กรุณาระบุจำนวนเงินที่ถูกต้อง");
                 
                 // Simulate processing
                 setTimeout(() => {
                     onTopUp(parseFloat(amount));
-                    alert(`เติมเงินสำเร็จ ${amount} บาท!`);
+                    notify("success", `เติมเงินสำเร็จ ${amount} บาท!`);
                     setAmount("");
                 }, 1500);
             };
@@ -478,7 +529,7 @@
         };
 
         // --- Admin Component ---
-        const AdminDashboard = ({ services, setServices, orders, setOrders, announcements, setAnnouncements, onSwitchToUserView, config, setConfig }) => {
+        const AdminDashboard = ({ services, setServices, orders, setOrders, announcements, setAnnouncements, onSwitchToUserView, config, setConfig, notify, askConfirm }) => {
             const [activeTab, setActiveTab] = useState("products"); 
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [editingItem, setEditingItem] = useState(null);
@@ -501,19 +552,20 @@
             const handleSaveProduct = (e) => {
                 e.preventDefault();
                 if (editingItem) {
-                    // Update in Firestore
                     db.collection("products").doc(editingItem.id).update(productForm);
+                    notify("success", "แก้ไขสินค้าเรียบร้อย");
                 } else {
-                    // Add to Firestore
                     db.collection("products").add(productForm);
+                    notify("success", "เพิ่มสินค้าใหม่เรียบร้อย");
                 }
                 setIsModalOpen(false); setEditingItem(null); setProductForm({ title: "", price: "", description: "", category: "Leveling", image: "" });
             };
 
             const handleDeleteProduct = (id) => {
-                if(confirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?")) {
+                askConfirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?", () => {
                     db.collection("products").doc(id).delete();
-                }
+                    notify("success", "ลบสินค้าเรียบร้อย");
+                });
             };
 
             const openEditModal = (service) => { setEditingItem(service); setProductForm(service); setIsModalOpen(true); };
@@ -521,6 +573,7 @@
 
             const handleStatusChange = (orderId, newStatus) => {
                 db.collection("orders").doc(orderId).update({ status: newStatus });
+                notify("success", "อัปเดตสถานะงานแล้ว");
             };
 
             const handleSaveAnnouncement = (e) => {
@@ -530,7 +583,7 @@
                     date: new Date().toLocaleDateString()
                 });
                 setAnnounceForm({ title: "", content: "", active: true });
-                alert("ประกาศแล้ว!");
+                notify("success", "ลงประกาศข่าวสารเรียบร้อย");
             };
 
             const toggleAnnouncement = (id, currentStatus) => {
@@ -538,7 +591,10 @@
             };
             
             const deleteAnnouncement = (id) => {
-                if(confirm("ลบประกาศนี้?")) db.collection("announcements").doc(id).delete();
+                askConfirm("ต้องการลบประกาศนี้?", () => {
+                    db.collection("announcements").doc(id).delete();
+                    notify("success", "ลบประกาศแล้ว");
+                });
             };
             
             const handleHeroImageUpload = (e) => {
@@ -559,8 +615,7 @@
             }
             const saveConfig = () => {
                 setConfig(tempConfig);
-                alert("บันทึกการตั้งค่าเรียบร้อย! (หมายเหตุ: Config ยังเก็บ LocalStorage ในเวอร์ชันนี้)");
-                // ถ้าจะให้ดีควรเก็บ Config ลง Firestore ด้วย แต่เพื่อความง่ายใช้ LocalState ไปก่อนในส่วนนี้
+                notify("success", "บันทึกการตั้งค่าเว็บไซต์เรียบร้อย");
             }
 
             return (
@@ -732,19 +787,43 @@
             const [selectedService, setSelectedService] = useState(null); 
             const [config, setConfig] = useState(initialConfig);
             
-            // Shared Data (Now fetched from Firebase)
+            // --- Toast Notification System State ---
+            const [notifications, setNotifications] = useState([]);
+            const notify = (type, message) => {
+                const id = Date.now();
+                setNotifications(prev => [...prev, { id, type, message }]);
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== id));
+                }, 4000);
+            };
+            const removeNotification = (id) => {
+                setNotifications(prev => prev.filter(n => n.id !== id));
+            };
+
+            // --- Confirm Modal State ---
+            const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, message: "", onConfirm: null });
+            const askConfirm = (message, action) => {
+                setConfirmConfig({ isOpen: true, message, onConfirm: action });
+            };
+            const closeConfirm = () => setConfirmConfig({ ...confirmConfig, isOpen: false });
+            const handleConfirmAction = () => {
+                if(confirmConfig.onConfirm) confirmConfig.onConfirm();
+                closeConfirm();
+            };
+
+            
+            // Shared Data
             const [services, setServices] = useState([]);
             const [orders, setOrders] = useState([]);
             const [announcements, setAnnouncements] = useState([]);
 
-            // 1. ตรวจสอบสถานะล็อกอิน (Auth Listener)
+            // 1. Auth Listener
             useEffect(() => {
                 const unsubscribe = auth.onAuthStateChanged((currentUser) => {
                     if (currentUser) {
                         setUser(currentUser.displayName || currentUser.email);
                         setIsLoggedIn(true);
                         
-                        // Check if Admin (Hardcoded security for demo)
                         // ** เปลี่ยนอีเมลนี้เป็นอีเมลของคุณที่จะใช้เป็นแอดมิน **
                         if (currentUser.email === "admin@roblox.com") {
                             setIsAdmin(true);
@@ -762,43 +841,28 @@
                 return () => unsubscribe();
             }, []);
 
-            // 2. ดึงข้อมูล Realtime จาก Firestore
+            // 2. Realtime Data
             useEffect(() => {
                 if (!db) return;
-
-                // Products
                 const unsubProducts = db.collection("products").onSnapshot(snapshot => {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setServices(data.length > 0 ? data : []); // ถ้าไม่มีข้อมูล ให้เป็นว่าง
+                    setServices(data.length > 0 ? data : []);
                 });
-
-                // Orders (เฉพาะแอดมินเห็นหมด หรือ user เห็นของตัวเอง)
-                // ในตัวอย่างนี้ดึงมาหมดเพื่อความง่าย (ควรทำ Security Rules)
                 const unsubOrders = db.collection("orders").orderBy("date", "desc").onSnapshot(snapshot => {
                      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                      setOrders(data);
                 });
-
-                // Announcements
                 const unsubAnnounce = db.collection("announcements").onSnapshot(snapshot => {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setAnnouncements(data);
                 });
-
-                return () => {
-                    unsubProducts();
-                    unsubOrders();
-                    unsubAnnounce();
-                };
+                return () => { unsubProducts(); unsubOrders(); unsubAnnounce(); };
             }, []);
-
-            const handleLogin = (username, admin) => {
-                // Login handles via Auth Listener now
-            };
 
             const handleLogout = () => {
                 auth.signOut();
                 setPage("home");
+                notify("success", "ออกจากระบบเรียบร้อย");
             };
 
             const handleTopUp = (amount) => {
@@ -811,20 +875,19 @@
             };
 
             const handleOrderSubmit = (orderData) => {
-                // บันทึกลง Firestore
                 db.collection("orders").add(orderData)
                     .then(() => {
-                        alert("สั่งซื้อสำเร็จ! ข้อมูลถูกส่งไปยังแอดมินแล้ว");
+                        notify("success", "สั่งซื้อสำเร็จ! รอแอดมินดำเนินการ");
                         setSelectedService(null);
                         setPage("history");
                     })
                     .catch((err) => {
                         console.error(err);
-                        alert("เกิดข้อผิดพลาดในการสั่งซื้อ");
+                        notify("error", "เกิดข้อผิดพลาดในการสั่งซื้อ");
                     });
             };
 
-            // Navbar Component (Same UI, Logic Updated)
+            // Navbar Component
             const Navbar = () => (
                 <nav className="glass-panel sticky top-0 z-50 border-b border-slate-700/50">
                     {announcements.some(a => a.active) && !isAdminMode && (
@@ -857,12 +920,10 @@
                         </div>
                         <button className="md:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>{mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}</button>
                     </div>
-                    {/* Mobile Menu omitted for brevity but logic is same */}
                 </nav>
             );
 
-            // Page Components (Home, Services, History) 
-            // ... (ใช้โค้ดเดิม แต่ Services Map จากตัวแปร services ที่ดึงจาก DB แล้ว)
+            // Page Components 
             const HomeContent = () => (
                 <div className="max-w-7xl mx-auto px-6 py-8">
                      <div className="relative rounded-3xl overflow-hidden bg-slate-800 border border-slate-700 shadow-2xl mb-12 animate-slide-in">
@@ -929,7 +990,12 @@
                 </div>
             );
 
-            if (!isLoggedIn) return <Login onLogin={handleLogin} config={config} />;
+            if (!isLoggedIn) return (
+                <>
+                    <Login onLogin={handleLogin} config={config} notify={notify} />
+                    <ToastSystem notifications={notifications} removeNotification={removeNotification} />
+                </>
+            );
 
             return (
                 <div className="min-h-screen pb-10 flex flex-col justify-between">
@@ -947,12 +1013,13 @@
                                 announcements={announcements} setAnnouncements={setAnnouncements}
                                 onSwitchToUserView={() => setIsAdminMode(false)}
                                 config={config} setConfig={setConfig}
+                                notify={notify} askConfirm={askConfirm}
                             />
                         ) : (
                             <>
                                 {page === 'home' && <HomeContent />}
                                 {page === 'services' && <ServicesContent />}
-                                {page === 'topup' && <TopUpPage onTopUp={handleTopUp} />}
+                                {page === 'topup' && <TopUpPage onTopUp={handleTopUp} notify={notify} />}
                                 {page === 'history' && <HistoryContent />}
                             </>
                         )}
@@ -963,8 +1030,11 @@
                     )}
 
                     {selectedService && (
-                        <OrderForm service={selectedService} onSubmit={handleOrderSubmit} onCancel={() => setSelectedService(null)} />
+                        <OrderForm service={selectedService} onSubmit={handleOrderSubmit} onCancel={() => setSelectedService(null)} notify={notify} />
                     )}
+
+                    <ToastSystem notifications={notifications} removeNotification={removeNotification} />
+                    <ConfirmModal isOpen={confirmConfig.isOpen} message={confirmConfig.message} onConfirm={handleConfirmAction} onCancel={closeConfirm} />
 
                     <footer className="mt-12 border-t border-slate-800 bg-slate-900/50 py-8">
                         <div className="max-w-7xl mx-auto px-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
