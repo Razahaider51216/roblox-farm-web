@@ -22,7 +22,6 @@
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .glass-panel-light { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .neon-glow { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
-        .gold-glow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
@@ -45,7 +44,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 1. ส่วนตั้งค่า FIREBASE ---
+        // --- 1. ส่วนตั้งค่า FIREBASE (ใส่ค่าเดิมของคุณ) ---
         const firebaseConfig = {
             apiKey: "AIzaSyAIdyu8C3PASsDZnPJuFqQpTHPXgIzQxDc",
             authDomain: "roblox-farm-db.firebaseapp.com",
@@ -108,7 +107,7 @@
 
         const { User, Lock, Mail, Gamepad2, Zap, ShieldCheck, LogOut, Menu, X, ShoppingCart, Clock, Phone, FileText, Key, Settings, Trash2, Edit, Plus, Upload, Megaphone, Wallet, CreditCard, Bell, Home, Palette, CheckCircle, XCircle, AlertTriangle, Layout, Image: ImageIcon, QrCode, Eye, EyeOff, Webhook } = LucideIcons;
 
-        // --- Helpers ---
+        // --- Helper Functions (Status Logic) ---
         const getStatusColor = (status) => {
             switch(status) {
                 case 'finished': return 'bg-green-500/20 text-green-400';
@@ -342,13 +341,7 @@
             const handleDeleteProduct = (id) => { askConfirm("คุณต้องการลบสินค้านี้ใช่หรือไม่?", () => { db.collection("products").doc(id).delete(); notify("success", "ลบสินค้าเรียบร้อย"); }); };
             const openEditModal = (service) => { setEditingItem(service); setProductForm(service); setIsModalOpen(true); };
             const openAddModal = () => { setEditingItem(null); setProductForm({ title: "", price: "", description: "", category: "Leveling", image: "" }); setIsModalOpen(true); };
-            
-            // Fixed: handleStatusChange
-            const handleStatusChange = (orderId, newStatus) => { 
-                db.collection("orders").doc(orderId).update({ status: newStatus }); 
-                notify("success", "อัปเดตสถานะงานแล้ว"); 
-            };
-            
+            const handleStatusChange = (orderId, newStatus) => { db.collection("orders").doc(orderId).update({ status: newStatus }); notify("success", "อัปเดตสถานะงานแล้ว"); };
             const handleSaveAnnouncement = (e) => { e.preventDefault(); db.collection("announcements").add({ ...announceForm, date: new Date().toLocaleDateString() }); setAnnounceForm({ title: "", content: "", active: true }); notify("success", "ลงประกาศข่าวสารเรียบร้อย"); };
             const toggleAnnouncement = (id, currentStatus) => { db.collection("announcements").doc(id).update({ active: !currentStatus }); };
             const deleteAnnouncement = (id) => { askConfirm("ต้องการลบประกาศนี้?", () => { db.collection("announcements").doc(id).delete(); notify("success", "ลบประกาศแล้ว"); }); };
