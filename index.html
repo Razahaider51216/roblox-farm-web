@@ -614,9 +614,12 @@
                     reader.readAsDataURL(file);
                 }
             }
+            
+            // --- NEW: Save Config to Firebase ---
             const saveConfig = () => {
-                setConfig(tempConfig);
-                notify("success", "บันทึกการตั้งค่าเว็บไซต์เรียบร้อย");
+                db.collection("settings").doc("config").set(tempConfig)
+                    .then(() => notify("success", "บันทึกการตั้งค่าเว็บไซต์เรียบร้อย"))
+                    .catch(err => notify("error", "บันทึกผิดพลาด: " + err.message));
             }
 
             return (
@@ -857,7 +860,15 @@
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setAnnouncements(data);
                 });
-                return () => { unsubProducts(); unsubOrders(); unsubAnnounce(); };
+                
+                // --- NEW: ดึงค่า Config จาก Firebase ---
+                const unsubConfig = db.collection("settings").doc("config").onSnapshot(doc => {
+                    if(doc.exists) {
+                        setConfig(doc.data());
+                    }
+                });
+
+                return () => { unsubProducts(); unsubOrders(); unsubAnnounce(); unsubConfig(); };
             }, []);
 
             const handleLogout = () => {
