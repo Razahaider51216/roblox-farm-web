@@ -44,7 +44,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- 1. ส่วนตั้งค่า FIREBASE (ใช้ Key เดิมของคุณ) ---
+        // --- 1. ส่วนตั้งค่า FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAIdyu8C3PASsDZnPJuFqQpTHPXgIzQxDc",
             authDomain: "roblox-farm-db.firebaseapp.com",
@@ -102,7 +102,7 @@
             QrCode: (props) => <Icon {...props}><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></Icon>,
             Eye: (props) => <Icon {...props}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></Icon>,
             EyeOff: (props) => <Icon {...props}><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></Icon>,
-            Webhook: (props) => <Icon {...props}><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.07.01-.13.01-.2a4 4 0 0 1 4-3.98c2.3 0 4.22 1.6 4.81 3.89.59 2.28 2.94 3.89 5.68 3.89H18a4 4 0 0 0 4-4 4 4 0 0 0-4-4 4 4 0 0 0-4 4c0 .725.214 1.395.59 1.945"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></Icon>
+            Webhook: (props) => <Icon {...props}><path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.07.01-.13.01-.2a4 4 0 0 1 4-3.98c2.3 0 4.22 1.6 4.81 3.89.59 2.28 2.94 3.89 5.68 3.89H18a4 4 0 0 0 4-4 4 4 0 0 0-4 4c0 .725.214 1.395.59 1.945"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></Icon>
         };
 
         const { User, Lock, Mail, Gamepad2, Zap, ShieldCheck, LogOut, Menu, X, ShoppingCart, Clock, Phone, FileText, Key, Settings, Trash2, Edit, Plus, Upload, Megaphone, Wallet, CreditCard, Bell, Home, Palette, CheckCircle, XCircle, AlertTriangle, Layout, Image: ImageIcon, QrCode, Eye, EyeOff, Webhook } = LucideIcons;
@@ -140,7 +140,7 @@
             discordWebhookUrl: ""
         };
 
-        // --- Components (Global Scope) ---
+        // --- Components ---
         const ToastSystem = ({ notifications, removeNotification }) => {
             return (
                 <div className="fixed top-4 right-4 z-[200] flex flex-col gap-3 pointer-events-none">
@@ -181,6 +181,7 @@
             );
         };
 
+        // --- Navbar Component (ตัวที่หายไป) ---
         const Navbar = ({ config, isAdminMode, setIsAdminMode, isAdmin, handleLogout, setPage, page, balance, user, announcements, mobileMenuOpen, setMobileMenuOpen }) => (
             <nav className="glass-panel sticky top-0 z-50 border-b border-slate-700/50">
                 {announcements.some(a => a.active) && !isAdminMode && (<div className="bg-purple-900/80 text-purple-200 text-xs py-1 overflow-hidden relative"><div className="animate-marquee inline-block px-4">{announcements.filter(a => a.active).map(a => `📢 ${a.title}: ${a.content}`).join("  |  ")}</div></div>)}
